@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
@@ -36,6 +37,7 @@ class Cooperative extends Model
         return $this->hasMany(Receipt::class);
     }
 
-    //TODO: Hacer tabla intermedia para relacionar Farmers y Cooperativas
-
+    public function farmers(): BelongsToMany{
+        return $this->belongsToMany(Farmer::class)->withPivot('partner','active');
+    }
 }
