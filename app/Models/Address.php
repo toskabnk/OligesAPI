@@ -22,7 +22,7 @@ class Address extends Model
         'floor',
         'door',
         'town_entity',
-        'town',
+        'town_name',
         'province',
         'country',
         'postal_code'

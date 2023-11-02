@@ -17,15 +17,13 @@ return new class extends Migration
             $table->string('dni', 10)->unique();
             $table->string('name', 150);
             $table->string('surname', 150);
-            $table->string('phone_number', 15);
-            $table->string('movil_number', 15);
+            $table->string('phone_number', 15)->nullable();
+            $table->string('movil_number', 15)->nullable();
             $table->unsignedBigInteger('user_id')->unique();
-            $table->unsignedBigInteger('cooperative_id');
             $table->unsignedBigInteger('address_id');
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users');
-            $table->foreign('cooperative_id')->references('id')->on('cooperatives');
             $table->foreign('address_id')->references('id')->on('addresses');
         });
     }
