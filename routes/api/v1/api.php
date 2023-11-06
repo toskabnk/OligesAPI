@@ -4,6 +4,7 @@ use App\Http\Controllers\API\AddressController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
+use App\Http\Controllers\API\CooperativeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,7 +36,10 @@ Route::group(['middleware' => 'auth:api'], function(){
     //Cooperative routes
     Route::group(['prefix' => 'cooperative'], function()
     {
-
+        Route::get('/', [CooperativeController::class, 'viewAll']);
+        Route::get('/{id}', [CooperativeController::class, 'view']);
+        Route::post('/', [CooperativeController::class, 'create']);
+        Route::put('/{id}', [CooperativeController::class, 'update']);
     });
 
     //Farmer routes

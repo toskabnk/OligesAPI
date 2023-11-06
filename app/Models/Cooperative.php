@@ -4,9 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Cooperative extends Model
 {
@@ -25,12 +25,12 @@ class Cooperative extends Model
     ];
 
     //Relacion 1 a 1 User
-    public function user(): HasOne{
-        return $this->hasOne(User::class);
+    public function user(): BelongsTo{
+        return $this->belongsTo(User::class);
     }
 
-    public function address(): HasOne{
-        return $this->hasOne(Address::class);
+    public function address(): BelongsTo{
+        return $this->belongsTo(Address::class);
     }
 
     public function receipts(): HasMany{
