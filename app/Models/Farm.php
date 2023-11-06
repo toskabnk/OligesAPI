@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Farm extends Model
 {
@@ -22,11 +22,11 @@ class Farm extends Model
 
     ];
 
-    public function farmer(): HasOne{
-        return $this->hasOne(Farmer::class);
+    public function farmer(): BelongsTo{
+        return $this->belongsTo(Farmer::class);
     }
 
-    public function address(): HasOne{
-        return $this->hasOne(Address::class);
+    public function address(): BelongsTo{
+        return $this->belongsTo(Address::class);
     }
 }

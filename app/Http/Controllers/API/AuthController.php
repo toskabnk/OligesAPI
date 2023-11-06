@@ -6,6 +6,7 @@ use App\Models\Address;
 use App\Models\Cooperative;
 use App\Models\User;
 use App\Models\Farmer;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -74,6 +75,11 @@ class AuthController extends ResponseController
         //Validate request
         $data = $this->validateData($request, $rules);
 
+        //If data is a response, return the response
+        if($data instanceof JsonResponse){
+            return $data;
+        }
+
         //Transaction for creating the entrys in the BD
         DB::beginTransaction();
         try
@@ -131,6 +137,11 @@ class AuthController extends ResponseController
         //Validate request
         $data = $this->validateData($request, $rules);
 
+        //If data is a response, return the response
+        if($data instanceof JsonResponse){
+            return $data;
+        }
+
         //Transaction for creating the entrys in the BD
         DB::beginTransaction();
         try
@@ -166,6 +177,11 @@ class AuthController extends ResponseController
 
         //Validate request
         $data = $this->validateData($request, $rules);
+
+        //If data is a response, return the response
+        if($data instanceof JsonResponse){
+            return $data;
+        }
 
         //Check credentials
         if(!auth()->attempt($data)) {

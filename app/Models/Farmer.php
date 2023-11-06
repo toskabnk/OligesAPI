@@ -4,9 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Farmer extends Model
 {
@@ -26,12 +26,12 @@ class Farmer extends Model
 
     ];
 
-    public function user(): HasOne{
-        return $this->hasOne(User::class);
+    public function user(): BelongsTo{
+        return $this->belongsTo(User::class);
     }
 
-    public function address(): HasOne{
-        return $this->hasOne(Address::class);
+    public function address(): BelongsTo{
+        return $this->belongsTo(Address::class);
     }
 
     public function receipts(): HasMany{
@@ -40,5 +40,9 @@ class Farmer extends Model
 
     public function cooperatives(): BelongsToMany{
         return $this->belongsToMany(Cooperative::class)->withPivot('partner', 'active');
+    }
+
+    public function farms(): HasMany{
+        return $this->hasMany(Farm::class);
     }
 }

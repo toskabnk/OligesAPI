@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\API\AddressController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
@@ -16,12 +17,14 @@ use App\Http\Controllers\API\AuthController;
 */
 
 //Routes without auth
-Route::group(['prefix' => 'cooperative'], function(){
-        Route::post('login', [AuthController::class, 'cooperativeLogin']);
+Route::group(['prefix' => 'auth'], function(){
+    Route::group(['prefix' => 'cooperative'], function(){
+            Route::post('login', [AuthController::class, 'cooperativeLogin']);
+        });
+    
+    Route::group(['prefix' => 'farmer'], function(){
+            Route::post('login', [AuthController::class, 'farmerLogin']);
     });
-
-Route::group(['prefix' => 'farmer'], function(){
-        Route::post('login', [AuthController::class, 'farmerLogin']);
 });
 
 //Routes with auth
@@ -39,6 +42,13 @@ Route::group(['middleware' => 'auth:api'], function(){
     Route::group(['prefix' => 'farmer'], function()
     {
 
+    });
+
+    //Address routes
+    Route::group(['prefix' => 'address'], function()
+    {
+        Route::post('/', [AddressController::class, 'create']);
+        Route::put('/{id}', [AddressController::class, 'update']);
     });
 });
 
