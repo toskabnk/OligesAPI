@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CooperativeController;
+use App\Http\Controllers\API\FarmerController;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,7 +46,10 @@ Route::group(['middleware' => 'auth:api'], function(){
     //Farmer routes
     Route::group(['prefix' => 'farmer'], function()
     {
-
+        Route::get('/{id}', [FarmerController::class, 'view']);
+        Route::get('/', [FarmerController::class, 'viewAll']);
+        Route::post('/', [FarmerController::class, 'create']);
+        Route::put('/{id}', [FarmerController::class, 'update']);
     });
 
     //Address routes

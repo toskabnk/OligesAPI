@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class CooperativeController extends ResponseController
 {
@@ -124,11 +125,33 @@ class CooperativeController extends ResponseController
 
     public function update(Request $request, $id)
     {
+        //Check if cooperative exist
+        $currentCooperative = Cooperative::find($id);
+        if(!$currentCooperative){
+            $this->respondNotFound();
+        }
+
         $rules = [
-            'nif' => 'required|max:10|unique:cooperatives',
+            'nif' => ['required','max:10',Rule::unique('cooperatives')->ignore($currentCooperative->id)],
             'name' => 'required|max:150',
-            'email' => 'required|email|max:255|unique:users',
-            'phone_number' => 'required|max:15'
+            'email' => ['required','email','max:255', Rule::unique('users')->ignore($currentCooperative->user->id)],
+            'phone_number' => 'max:15',
+            'movil_number' => 'max:15',
+            'road_type' => 'required|max:30',
+            'road_name' => 'required|max:150',
+            'road_number' => 'required|max:5',
+            'road_letter' => 'max:5',
+            'road_km' => 'max:10',
+            'block' => 'max:10',
+            'portal' => 'max:10',
+            'stair' => 'max:10',
+            'floor' => 'max:5',
+            'door' => 'max:5',
+            'town_entity' => 'max:50',
+            'town_name' => 'required|max:50',
+            'province' => 'required|max:50',
+            'country' => 'required|max:50',
+            'postal_code' => 'required|max:10'
         ];
 
         //Get authenticate user id
@@ -145,7 +168,6 @@ class CooperativeController extends ResponseController
         //TODO: Create for admin
 
         //Check if the current user belongs to the cooperative
-        $currentCooperative = Cooperative::find($id);
         if($currentCooperative->user->id != $currentID){
             return $this->respondUnauthorized();
         }
@@ -160,6 +182,8 @@ class CooperativeController extends ResponseController
 
         //Update the cooperative
         $currentCooperative->update($data);
+        $currentCooperative->user->update($data);
+        $currentCooperative->address->update($data);
 
         $response = [
             'message' => 'Cooperative edited',
@@ -171,6 +195,7 @@ class CooperativeController extends ResponseController
 
     public function view($id)
     {
+        //TODO: Only if the user is the cooperative or the farmer belongs to the cooperative
         $cooperative = Cooperative::find($id);
         $cooperative->user;
         $cooperative->address;
@@ -184,6 +209,7 @@ class CooperativeController extends ResponseController
 
     public function viewAll()
     {
+        //TODO: All cooperatives from the farmer
         $cooperatives = Cooperative::with(['user', 'address'])->get();
 
         return $this->respondSuccess(['cooperative' => $cooperatives]);
