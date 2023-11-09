@@ -294,8 +294,8 @@ class FarmerController extends ResponseController
         }
 
         //Chek if the user is a farmer
-        if($currentUser->cooperative){
-            return $this->respondSuccess(['farmer' => $currentUser->farmer->cooperatives]);
+        if(!$currentUser->cooperative){
+            return $this->respondUnauthorized();
         }
 
         //Validation rules
@@ -312,14 +312,14 @@ class FarmerController extends ResponseController
             return $data;
         }
 
-        if($data['dni']){
+        if(array_key_exists('dni', $data)){
             if(Farmer::where('dni', $data['dni'])->exists()){
                 return $this->respondSuccess(['exist' => true]);
             } else {
                 return $this->respondSuccess(['exist' => false]);
             }
         } else {
-            if($data['email']){
+            if(array_key_exists('email', $data)){
                 if(Farmer::where('email', $data['email'])->exists()){
                     return $this->respondSuccess(['exist' => true]);
                 } else {
@@ -329,6 +329,6 @@ class FarmerController extends ResponseController
         }
 
         //If dni and email null, respond bad request
-        $this->respondBadRequest();
+        return $this->respondBadRequest();
     }
 }

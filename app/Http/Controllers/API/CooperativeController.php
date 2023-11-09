@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Http\Controllers\Controller;
 use App\Models\Address;
 use App\Models\Cooperative;
 use App\Models\Farmer;
@@ -130,15 +129,15 @@ class CooperativeController extends ResponseController
         //Check if cooperative exist
         $currentCooperative = Cooperative::find($id);
         if(!$currentCooperative){
-            $this->respondNotFound();
+            return $this->respondNotFound();
         }
 
         $rules = [
             'nif' => ['required','max:10',Rule::unique('cooperatives')->ignore($currentCooperative->id)],
             'name' => 'required|max:150',
             'email' => ['required','email','max:255', Rule::unique('users')->ignore($currentCooperative->user->id)],
-            'phone_number' => 'max:15',
-            'movil_number' => 'max:15',
+            'phone_number' => ['max:15',Rule::unique('cooperatives')->ignore($currentCooperative->id)],
+            'movil_number' => ['max:15',Rule::unique('cooperatives')->ignore($currentCooperative->id)],
             'road_type' => 'required|max:30',
             'road_name' => 'required|max:150',
             'road_number' => 'required|max:5',
@@ -202,7 +201,7 @@ class CooperativeController extends ResponseController
 
         //Check if cooperative exist
         if(!$cooperative){
-            $this->respondNotFound();
+            return $this->respondNotFound();
         }
 
         //Load the data
@@ -218,8 +217,12 @@ class CooperativeController extends ResponseController
         }
 
         //Chek if the user is a cooperative and is the same as the id
-        if($currentUser->cooperative && $currentUser->cooperative->id == $id){
-            return $this->respondSuccess(['cooperative' => $cooperative]);
+        if($currentUser->cooperative){
+            if($currentUser->cooperative->id == $id){
+                return $this->respondSuccess(['cooperative' => $cooperative]);
+            } else {
+                return $this-> respondUnauthorized();  
+            }
         } else {
             //Check if the current user is registered in the cooperative
             if($currentUser->farmer->cooperatives->contains($cooperative)){
@@ -286,7 +289,7 @@ class CooperativeController extends ResponseController
         //Check if farmer exist
         $farmer = Farmer::find($id);
         if(!$farmer){
-            $this->respondNotFound();
+            return $this->respondNotFound();
         }
 
         //Validate the data
@@ -315,17 +318,17 @@ class CooperativeController extends ResponseController
                 $farmer->cooperatives()->updateExistingPivot($currentUser->cooperative->id, ['active' => true]);
 
                 //Responde success
-                $this->respondSuccess(['message' => 'Farmer is added to the cooperative, again']);
+                return $this->respondSuccess(['message' => 'Farmer is added to the cooperative, again']);
             } else {
                 //? Other type of response if already registered?
-                $this->respondSuccess(['message' => 'Farmer is alredy registered in the cooperative']);
+                return $this->respondSuccess(['message' => 'Farmer is alredy registered in the cooperative']);
             }
         }
 
         //Register the user to the cooperative
         $farmer->cooperatives()->attach($currentUser->cooperative->id, $intermediateData);
 
-        $this->respondSuccess(['message' => 'Farmer added to the cooperative']);
+        return $this->respondSuccess(['message' => 'Farmer added to the cooperative']);
     }
 
     //Delete the farmer to the cooperative
@@ -348,7 +351,7 @@ class CooperativeController extends ResponseController
         //Check if farmer exist
         $farmer = Farmer::find($id);
         if(!$farmer){
-            $this->respondNotFound();
+            return $this->respondNotFound();
         }
 
         //Intermediate data
@@ -369,12 +372,12 @@ class CooperativeController extends ResponseController
                 $farmer->cooperatives()->updateExistingPivot($currentUser->cooperative->id, ['active' => false]);
 
                 //Respond success
-                $this->respondSuccess(['message' => 'Farmer is deleted to the cooperative']);
+                return $this->respondSuccess(['message' => 'Farmer is deleted to the cooperative']);
             } else {
                 //? Other type of response if already deleted?
-                $this->respondSuccess(['message' => 'Farmer already deleted from the cooperative']);
+                return $this->respondSuccess(['message' => 'Farmer already deleted from the cooperative']);
             }
         }
-        $this->respondSuccess(['message' => 'Farmer is not from the cooperative']);
+        return $this->respondSuccess(['message' => 'Farmer is not from the cooperative']);
     }
 }

@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CooperativeController;
+use App\Http\Controllers\API\FarmController;
 use App\Http\Controllers\API\FarmerController;
 
 /*
@@ -21,11 +22,13 @@ use App\Http\Controllers\API\FarmerController;
 //Routes without auth
 Route::group(['prefix' => 'auth'], function(){
     Route::group(['prefix' => 'cooperative'], function(){
-            Route::post('login', [AuthController::class, 'cooperativeLogin']);
+            Route::post('/login', [AuthController::class, 'cooperativeLogin']);
+            Route::post('/', [AuthController::class, 'registerCooperative']);
         });
     
     Route::group(['prefix' => 'farmer'], function(){
-            Route::post('login', [AuthController::class, 'farmerLogin']);
+            Route::post('/login', [AuthController::class, 'farmerLogin']);
+            Route::post('/', [AuthController::class, 'registerFarmer']);
     });
 });
 
@@ -37,17 +40,18 @@ Route::group(['middleware' => 'auth:api'], function(){
     //Cooperative routes
     Route::group(['prefix' => 'cooperative'], function()
     {
-        Route::get('/{id}', [CooperativeController::class, 'view']);
         Route::get('/farmers', [CooperativeController::class, 'viewCooperativeFarmers']);
+        Route::get('/{id}', [CooperativeController::class, 'view']);
         //? Should this path be /farmer/cooperative?
-        Route::post('/farmer/{id}', [Cooperative::class, 'addFarmerToCooperative']);
-        Route::delete('/farmer/{id}', [Cooperative::class, 'deleteFarmerFromCooperative']);
+        Route::post('/farmer/{id}', [CooperativeController::class, 'addFarmerToCooperative']);
         Route::put('/{id}', [CooperativeController::class, 'update']);
+        Route::delete('/farmer/{id}', [CooperativeController::class, 'deleteFarmerFromCooperative']);
     });
 
     //Farmer routes
     Route::group(['prefix' => 'farmer'], function()
-    {
+    {        
+        Route::get('/cooperatives', [FarmerController::class, 'viewFarmerCooperatives']);
         Route::get('/{id}', [FarmerController::class, 'view']);
         Route::post('/', [FarmerController::class, 'create']);
         Route::post('/check', [FarmerController::class, 'checkFarmer']);
@@ -59,6 +63,15 @@ Route::group(['middleware' => 'auth:api'], function(){
     {
         Route::post('/', [AddressController::class, 'create']);
         Route::put('/{id}', [AddressController::class, 'update']);
+    });
+
+    //Farm routes
+    Route::group(['prefix' => 'farm'], function()
+    {
+        Route::get('/farmer/{id}', [FarmController::class, 'viewFarmerFarms']);
+        Route::get('/{id}', [FarmController::class, 'view']);
+        Route::post('/', [FarmController::class, 'create']);
+        Route::put('/{id}', [FarmController::class, 'update']);
     });
 
     //Admin routes

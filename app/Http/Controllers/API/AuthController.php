@@ -54,7 +54,7 @@ class AuthController extends ResponseController
             'email' => 'required|email|max:255|unique:users',
             'password' => 'required|confirmed|min:8',
             'password_confirmation' => 'required|same:password',
-            'phone_number' => 'required|max:15',
+            'phone_number' => 'required|max:15|unique:cooperatives',
             'road_type' => 'required|max:30',
             'road_name' => 'required|max:150',
             'road_number' => 'required|max:5',
