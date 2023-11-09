@@ -49,4 +49,9 @@ class ResponseController extends Controller
     {
         return $this->respondError($message, 422, $errors);
     }
+
+    protected function respondBadRequest($message = 'Bad Request', $errors = '')
+    {
+        return $this->respondError($message, 400, $errors);
+    }
 }

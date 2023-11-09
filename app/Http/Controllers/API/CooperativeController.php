@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Address;
 use App\Models\Cooperative;
+use App\Models\Farmer;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -46,6 +47,8 @@ class CooperativeController extends ResponseController
         return $data;
     }
 
+    //TODO: Create for admin, send email like farmer
+    //Create a Cooperative
     public function create(Request $request)
     {
         $rules = [
@@ -82,8 +85,6 @@ class CooperativeController extends ResponseController
 
         //Get the current user from id
         $currentUser = User::find($currentID);
-
-        //TODO: Create for admin
 
         //Validate the data
         $data = $this->validateData($request, $rules);
@@ -123,6 +124,7 @@ class CooperativeController extends ResponseController
         }
     }
 
+    //Update the Cooperative
     public function update(Request $request, $id)
     {
         //Check if cooperative exist
@@ -193,25 +195,186 @@ class CooperativeController extends ResponseController
         return $this->respondSuccess($response);
     }
 
+    //View the datils from a cooperative
     public function view($id)
     {
-        //TODO: Only if the user is the cooperative or the farmer belongs to the cooperative
         $cooperative = Cooperative::find($id);
-        $cooperative->user;
-        $cooperative->address;
 
+        //Check if cooperative exist
         if(!$cooperative){
             $this->respondNotFound();
         }
 
-        return $this->respondSuccess(['cooperative' => $cooperative]);
+        //Load the data
+        $cooperative->user;
+        $cooperative->address;
+
+        //Get authenticate user id
+        $currentUser = Auth::user();
+
+        //Check if not null
+        if(!$currentUser){
+            return $this-> respondUnauthorized();
+        }
+
+        //Chek if the user is a cooperative and is the same as the id
+        if($currentUser->cooperative && $currentUser->cooperative->id == $id){
+            return $this->respondSuccess(['cooperative' => $cooperative]);
+        } else {
+            //Check if the current user is registered in the cooperative
+            if($currentUser->farmer->cooperatives->contains($cooperative)){
+                return $this->respondSuccess(['cooperative' => $cooperative]);
+            }
+        }
+
+        return $this-> respondUnauthorized();    
     }
 
+    //View all cooperatives
+    //TODO: Only if admin
     public function viewAll()
     {
-        //TODO: All cooperatives from the farmer
         $cooperatives = Cooperative::with(['user', 'address'])->get();
 
         return $this->respondSuccess(['cooperative' => $cooperatives]);
+    }
+
+    //View the farmers from the cooperative
+    //? Show only active farmers?
+    public function viewCooperativeFarmers()
+    {
+        //Get authenticate user id
+        $currentUser = Auth::user();
+
+        //Check if not null
+        if(!$currentUser){
+            return $this-> respondUnauthorized();
+        }
+
+        //Chek if the user is a cooperative
+        if($currentUser->cooperative){
+            return $this->respondSuccess(['farmer' => $currentUser->cooperative->farmers]);
+        }
+
+        //If not, return unauthorized
+        return $this-> respondUnauthorized();
+    }
+
+    
+    //Register the farmer to the cooperative
+    //? Should this function be in FarmerController?
+    public function addFarmerToCooperative(Request $request, $id)
+    {
+        $rules = [
+            'partner' => 'required|boolean',
+            'active' => 'required|boolean'
+        ];
+
+        //Get authenticate user id
+        $currentUser = Auth::user();
+        
+        //Check if not null
+        if(!$currentUser){
+            return $this-> respondUnauthorized();
+        }
+        
+        //Chek if the user is not a cooperative
+        if(!$currentUser->cooperative){
+            return $this->respondUnauthorized();
+        }
+        
+        //Check if farmer exist
+        $farmer = Farmer::find($id);
+        if(!$farmer){
+            $this->respondNotFound();
+        }
+
+        //Validate the data
+        $data = $this->validateData($request, $rules);
+
+        //If data is a response, return the response
+        if($data instanceof JsonResponse){
+            return $data;
+        }
+
+        //Intermediate data
+        $intermediateData = [
+            'partner' => $data['partner'],
+            'active' => $data['active'],
+        ];
+
+        //Check if farmer is registered in the cooperative
+        if($farmer->cooperatives->contains($currentUser->cooperative)) {
+            //Save farmer active status
+            $active = $farmer->cooperatives->find($currentUser->cooperative->id)->pivot->active;
+
+            //Check if farmer is not active
+            if(!$active){
+
+                //Update the active data
+                $farmer->cooperatives()->updateExistingPivot($currentUser->cooperative->id, ['active' => true]);
+
+                //Responde success
+                $this->respondSuccess(['message' => 'Farmer is added to the cooperative, again']);
+            } else {
+                //? Other type of response if already registered?
+                $this->respondSuccess(['message' => 'Farmer is alredy registered in the cooperative']);
+            }
+        }
+
+        //Register the user to the cooperative
+        $farmer->cooperatives()->attach($currentUser->cooperative->id, $intermediateData);
+
+        $this->respondSuccess(['message' => 'Farmer added to the cooperative']);
+    }
+
+    //Delete the farmer to the cooperative
+    //? Should this function be in FarmerController?
+    public function deleteFarmerFromCooperative($id)
+    {
+        //Get authenticate user id
+        $currentUser = Auth::user();
+        
+        //Check if not null
+        if(!$currentUser){
+            return $this-> respondUnauthorized();
+        }
+        
+        //Chek if the user is not a cooperative
+        if(!$currentUser->cooperative){
+            return $this->respondUnauthorized();
+        }
+        
+        //Check if farmer exist
+        $farmer = Farmer::find($id);
+        if(!$farmer){
+            $this->respondNotFound();
+        }
+
+        //Intermediate data
+        $intermediateData = [
+            'partner' => false,
+            'active' => false,
+        ];
+
+        //Check if farmer is registered in the cooperative and the farmer is active
+        if($farmer->cooperatives->contains($currentUser->cooperative)) {
+            //Save farmer active status
+            $active = $farmer->cooperatives->find($currentUser->cooperative->id)->pivot->active;
+
+            //Check if farmer is active
+            if($active){
+
+                //Update active data
+                $farmer->cooperatives()->updateExistingPivot($currentUser->cooperative->id, ['active' => false]);
+
+                //Respond success
+                $this->respondSuccess(['message' => 'Farmer is deleted to the cooperative']);
+            } else {
+                //? Other type of response if already deleted?
+                $this->respondSuccess(['message' => 'Farmer already deleted from the cooperative']);
+            }
+        }
+        $this->respondSuccess(['message' => 'Farmer is not from the cooperative']);
     }
 }

@@ -47,6 +47,7 @@ class FarmerController extends ResponseController
         return $validation->validated();
     }
 
+    //Create the farmer from a cooperative
     public function create(Request $request)
     {
         //Validation rules
@@ -72,8 +73,8 @@ class FarmerController extends ResponseController
             'province' => 'required|max:50',
             'country' => 'required|max:50',
             'postal_code' => 'required|max:10',
-            'partner' => 'boolean',
-            'active' => 'boolean'
+            'partner' => 'required|boolean',
+            'active' => 'required|boolean'
         ];
 
         //Validate request
@@ -148,6 +149,7 @@ class FarmerController extends ResponseController
         }
     }
 
+    //Update the farmer
     public function update(Request $request, $id)
     {
         //Check if farmer exist
@@ -217,6 +219,7 @@ class FarmerController extends ResponseController
         return $this->respondSuccess($response);
     }
 
+    //View farmer details
     public function view($id)
     {
         //Check if farmer exist
@@ -250,7 +253,8 @@ class FarmerController extends ResponseController
         return $this-> respondUnauthorized();
     }
 
-    public function viewAll()
+    //View all the cooperatives registered in the logged farmer
+    public function viewFarmerCooperatives()
     {
         //Get authenticate user id
         $currentUser = Auth::user();
@@ -260,12 +264,71 @@ class FarmerController extends ResponseController
             return $this-> respondUnauthorized();
         }
 
-        //Chek if the user is a cooperative
-        if($currentUser->cooperative){
-            return $this->respondSuccess(['farmer' => $currentUser->cooperative->farmers]);
+        //Chek if the user is a farmer
+        if($currentUser->farmer){
+            return $this->respondSuccess(['farmer' => $currentUser->farmer->cooperatives]);
         }
 
         //If not, return unauthorized
         return $this-> respondUnauthorized();
+    }
+
+    //View all farmers
+    public function viewAll()
+    {
+        //TODO: Only if admin
+        $farmers = Farmer::with(['user', 'address'])->get();
+
+        return $this->respondSuccess(['farmer' => $farmers]);
+    }
+
+    //Check if exist the farmer
+    public function checkFarmer(Request $request)
+    {
+        //Get authenticate user id
+        $currentUser = Auth::user();
+
+        //Check if not null
+        if(!$currentUser){
+            return $this-> respondUnauthorized();
+        }
+
+        //Chek if the user is a farmer
+        if($currentUser->cooperative){
+            return $this->respondSuccess(['farmer' => $currentUser->farmer->cooperatives]);
+        }
+
+        //Validation rules
+        $rules = [
+            'dni' => 'sometimes|required|max:10',
+            'email' => 'sometimes|required|email|max:255',
+        ];
+
+        //Validate the data
+        $data = $this->validateData($request, $rules);
+
+        //If data is a response, return the response
+        if($data instanceof JsonResponse){
+            return $data;
+        }
+
+        if($data['dni']){
+            if(Farmer::where('dni', $data['dni'])->exists()){
+                return $this->respondSuccess(['exist' => true]);
+            } else {
+                return $this->respondSuccess(['exist' => false]);
+            }
+        } else {
+            if($data['email']){
+                if(Farmer::where('email', $data['email'])->exists()){
+                    return $this->respondSuccess(['exist' => true]);
+                } else {
+                    return $this->respondSuccess(['exist' => false]);
+                }
+            }
+        }
+
+        //If dni and email null, respond bad request
+        $this->respondBadRequest();
     }
 }
