@@ -137,7 +137,7 @@ class FarmerController extends ResponseController
             DB::commit();
             
             //Return success message
-            return $this->respondSuccess(['message' => 'Farmer registered!']);
+            return $this->respondSuccess(['message' => 'Farmer registered!'],201);
         } catch (\Exception $e) {
             //If the transaction have errors, do a rollback
             DB::rollback();

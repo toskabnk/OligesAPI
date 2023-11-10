@@ -103,7 +103,7 @@ class AddressController extends ResponseController
         $address = Address::create($data);
 
         //Respond success
-        return $this->respondSuccess(['message' => 'Address created']);
+        return $this->respondSuccess(['message' => 'Address created'],201);
     }
 
     public function update(Request $request, string $id)
@@ -134,17 +134,11 @@ class AddressController extends ResponseController
         //Get the current user from id
         $currentUser = User::find($currentID);
 
-        //Data response with the updated address
-        $response = [
-            'message' => 'Address updated',
-            'address' => $address
-        ];
-
         //Check if user can edit the address
         $permission = $this->checkAuthorized($address, $currentUser, $id);
         if($permission) {
             $address->update($data);
-            return $this->respondSuccess($response);
+            return $this->respondSuccess(['message' => 'Address updated']);
         } else {
             return $this->respondUnauthorized();
         }

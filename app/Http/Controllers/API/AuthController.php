@@ -93,7 +93,7 @@ class AuthController extends ResponseController
             DB::commit();
             
             //Return success message
-            return $this->respondSuccess(['message' => 'Cooperative registered!']);
+            return $this->respondSuccess(['message' => 'Cooperative registered!'],201);
         } catch (\Exception $e) {
             //If the transaction have errors, do a rollback
             DB::rollback();
@@ -155,7 +155,7 @@ class AuthController extends ResponseController
             DB::commit();
             
             //Return success message
-            return $this->respondSuccess(['message' => 'Farmer registered!']);
+            return $this->respondSuccess(['message' => 'Farmer registered!'],201);
         } catch (\Exception $e) {
             //If the transaction have errors, do a rollback
             DB::rollback();
@@ -206,6 +206,11 @@ class AuthController extends ResponseController
         //Login with the data
         $data = $this->login($request);
 
+        //If data is a response, return the response
+        if($data instanceof JsonResponse){
+            return $data;
+        }
+
         //Get the cooperative data
         $cooperative = $data['user']->cooperative;
 
@@ -224,6 +229,11 @@ class AuthController extends ResponseController
     {
         //Login with the data
         $data = $this->login($request);
+
+        //If data is a response, return the response
+        if($data instanceof JsonResponse){
+            return $data;
+        }
 
         //Get the cooperative data
         $farmer = $data['user']->farmer;

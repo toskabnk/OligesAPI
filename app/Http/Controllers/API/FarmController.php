@@ -112,7 +112,7 @@ class FarmController extends ResponseController
             DB::commit();
             
             //Return success message
-            return $this->respondSuccess(['message' => 'Farm registered!']);
+            return $this->respondSuccess(['message' => 'Farm registered!'],201);
         } catch (\Exception $e) {
             //If the transaction have errors, do a rollback
             DB::rollback();
@@ -269,7 +269,7 @@ class FarmController extends ResponseController
             }
         } else {
             //Chek if the user is a cooperative
-            if($currentUser->cooperative && $currentUser->cooperative->farmers->contains($currentFarmer)){
+            if($currentUser->cooperative && $currentUser->cooperative->farmers->contains($currentFarm->farmer)){
                 return $this->respondSuccess(['farm' => $currentFarm]);
             }
         }

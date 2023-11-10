@@ -111,7 +111,7 @@ class CooperativeController extends ResponseController
             ];
             
             //Return success message
-            return $this->respondSuccess($data);
+            return $this->respondSuccess($data, 201);
         } catch (\Exception $e) {
             //If the transaction have errors, do a rollback
             DB::rollback();
