@@ -7,6 +7,7 @@ use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CooperativeController;
 use App\Http\Controllers\API\FarmController;
 use App\Http\Controllers\API\FarmerController;
+use App\Http\Controllers\API\ReceiptController;
 
 /*
 |--------------------------------------------------------------------------
@@ -65,12 +66,24 @@ Route::group(['middleware' => 'auth:api'], function(){
         Route::put('/{id}', [AddressController::class, 'update']);
     });
 
+    //Receipt routes
+    Route::group(['prefix' => 'receipt'], function()
+    {
+        Route::get('/', [ReceiptController::class, 'viewReceiptsCooperative']);
+        Route::get('/{id}', [ReceiptController::class, 'viewDetails']);
+        Route::post('/', [ReceiptController::class, 'create']);
+        //? Is neccesary?
+        //Route::put('/{id}', [ReceiptController::class, 'update']);
+        Route::delete('/{id}', [ReceiptController::class, 'delete']);
+
+    });
+
     //Farm routes
     Route::group(['prefix' => 'farm'], function()
     {
         Route::get('/farmer/{id}', [FarmController::class, 'viewFarmerFarms']);
         Route::get('/{id}', [FarmController::class, 'view']);
-        Route::post('/', [FarmController::class, 'create']);
+        Route::post('/{id}', [FarmController::class, 'create']);
         Route::put('/{id}', [FarmController::class, 'update']);
     });
 

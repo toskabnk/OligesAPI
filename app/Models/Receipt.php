@@ -16,7 +16,9 @@ class Receipt extends Model
         'sign',
         'albaran_number',
         'cooperative_id',
-        'farmer_id'
+        'farmer_id',
+        'farm_id',
+        'campaign'
     ];
 
     protected $hidden = [
@@ -31,7 +33,11 @@ class Receipt extends Model
         return $this->belongsTo(Farmer::class);
     }
 
-    public function receipts(): HasMany{
+    public function weights(): HasMany{
         return $this->hasMany(Weight::class);
+    }
+
+    public function farm(): BelongsTo{
+        return $this->belongsTo(Address::class);
     }
 }

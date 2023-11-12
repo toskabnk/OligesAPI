@@ -262,7 +262,7 @@ class FarmController extends ResponseController
         //Check if the user is a farmer
         if($currentUser->farmer){
             //Check if the user is the same as the farmer
-            if($currentFarm->id == $currentUser->farmer->farms->contains($currentFarm)){
+            if($currentUser->farmer->farms->contains($currentFarm)){
                 return $this->respondSuccess(['farm' => $currentFarm]);
             } else {
                 return $this->respondUnauthorized();

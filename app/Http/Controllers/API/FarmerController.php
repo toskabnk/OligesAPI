@@ -320,7 +320,7 @@ class FarmerController extends ResponseController
             }
         } else {
             if(array_key_exists('email', $data)){
-                if(Farmer::where('email', $data['email'])->exists()){
+                if(Farmer::whereRelation('users','email', $data['email'])->exists()){
                     return $this->respondSuccess(['exist' => true]);
                 } else {
                     return $this->respondSuccess(['exist' => false]);
