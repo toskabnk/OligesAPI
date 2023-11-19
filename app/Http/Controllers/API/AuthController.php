@@ -266,4 +266,27 @@ class AuthController extends ResponseController
         //Return success message
         return $this->respondSuccess(['message' => 'User logout']);
     }
+
+    public function profile()
+    {
+        //Get current user
+        $currentUser = Auth::user();
+
+        //If null, respond unauthorized
+        if(!$currentUser){
+            return $this-> respondUnauthorized();
+        }
+
+        //Cheking if the user is a cooperative or a farmer
+        if($currentUser->cooperative){
+            $currentUser->cooperative;
+            $currentUser->cooperative->address;
+        }else{
+            $currentUser->farmer;
+            $currentUser->farmer->address;
+        }
+
+        //Return the user data
+        return $this->respondSuccess($currentUser);
+    }
 }
