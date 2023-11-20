@@ -160,15 +160,15 @@ class FarmerController extends ResponseController
 
         //Validation rules
         $rules = [
-            'dni' => ['required','max:10', Rule::unique('farmers')->ignore($currentFarmer->id),],
-            'name' => 'required|max:150',
-            'surname' => 'required|max:150',
-            'email' => ['required','email','max:255', Rule::unique('users')->ignore($currentFarmer->user->id)],
+            'dni' => ['sometimes','required','max:10', Rule::unique('farmers')->ignore($currentFarmer->id),],
+            'name' => 'sometimes|required|max:150',
+            'surname' => 'sometimes|required|max:150',
+            'email' => ['sometimes','required','email','max:255', Rule::unique('users')->ignore($currentFarmer->user->id)],
             'phone_number' => 'max:15',
             'movil_number' => 'max:15',
-            'road_type' => 'required|max:30',
-            'road_name' => 'required|max:150',
-            'road_number' => 'required|max:5',
+            'road_type' => 'sometimes|required|max:30',
+            'road_name' => 'sometimes|required|max:150',
+            'road_number' => 'sometimes|required|max:5',
             'road_letter' => 'max:5',
             'road_km' => 'max:10',
             'block' => 'max:10',
@@ -177,10 +177,10 @@ class FarmerController extends ResponseController
             'floor' => 'max:5',
             'door' => 'max:5',
             'town_entity' => 'max:50',
-            'town_name' => 'required|max:50',
-            'province' => 'required|max:50',
-            'country' => 'required|max:50',
-            'postal_code' => 'required|max:10',
+            'town_name' => 'sometimes|required|max:50',
+            'province' => 'sometimes|required|max:50',
+            'country' => 'sometimes|required|max:50',
+            'postal_code' => 'sometimes|required|max:10',
         ];
 
         //Get authenticate user id
@@ -211,7 +211,7 @@ class FarmerController extends ResponseController
 
         //Response data
         $response = [
-            'message' => 'Cooperative edited',
+            'message' => 'Farmer edited',
             'farmer' => $currentFarmer
         ];
 
