@@ -19,7 +19,7 @@ class CooperativeController extends ResponseController
     protected function validateData(Request $request, $rules ){
         //Request validation with the rules
         $validation = Validator::make($request->all(),$rules);
-        
+
         //If validation fails, send a reponse with the errors
         if($validation->fails())
         {
@@ -109,13 +109,13 @@ class CooperativeController extends ResponseController
                 'message' => 'Cooperative created',
                 'cooperative' => $cooperative
             ];
-            
+
             //Return success message
             return $this->respondSuccess($data, 201);
         } catch (\Exception $e) {
             //If the transaction have errors, do a rollback
             DB::rollback();
-           
+
             //Return the error message (Debugging only)
             return $this->respondError($e->getMessage(), 500);
             //TODO: Change in production
@@ -221,7 +221,7 @@ class CooperativeController extends ResponseController
             if($currentUser->cooperative->id == $id){
                 return $this->respondSuccess(['cooperative' => $cooperative]);
             } else {
-                return $this-> respondUnauthorized();  
+                return $this-> respondUnauthorized();
             }
         } else {
             //Check if the current user is registered in the cooperative
@@ -230,7 +230,7 @@ class CooperativeController extends ResponseController
             }
         }
 
-        return $this-> respondUnauthorized();    
+        return $this-> respondUnauthorized();
     }
 
     //View all cooperatives
@@ -254,16 +254,18 @@ class CooperativeController extends ResponseController
             return $this-> respondUnauthorized();
         }
 
-        //Chek if the user is a cooperative
+        //Check if the user is a cooperative
         if($currentUser->cooperative){
-            return $this->respondSuccess(['farmer' => $currentUser->cooperative->farmers]);
+            //Load farmer data with the user info
+            $farmers = $currentUser->cooperative->farmers()->with('user')->get();
+            return $this->respondSuccess(['farmer' => $farmers]);
         }
 
         //If not, return unauthorized
         return $this-> respondUnauthorized();
     }
 
-    
+
     //Register the farmer to the cooperative
     //? Should this function be in FarmerController?
     public function addFarmerToCooperative(Request $request, $id)
@@ -275,17 +277,17 @@ class CooperativeController extends ResponseController
 
         //Get authenticate user id
         $currentUser = Auth::user();
-        
+
         //Check if not null
         if(!$currentUser){
             return $this-> respondUnauthorized();
         }
-        
+
         //Chek if the user is not a cooperative
         if(!$currentUser->cooperative){
             return $this->respondUnauthorized();
         }
-        
+
         //Check if farmer exist
         $farmer = Farmer::find($id);
         if(!$farmer){
@@ -337,17 +339,17 @@ class CooperativeController extends ResponseController
     {
         //Get authenticate user id
         $currentUser = Auth::user();
-        
+
         //Check if not null
         if(!$currentUser){
             return $this-> respondUnauthorized();
         }
-        
+
         //Chek if the user is not a cooperative
         if(!$currentUser->cooperative){
             return $this->respondUnauthorized();
         }
-        
+
         //Check if farmer exist
         $farmer = Farmer::find($id);
         if(!$farmer){
