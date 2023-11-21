@@ -133,14 +133,13 @@ class CooperativeController extends ResponseController
         }
 
         $rules = [
-            'nif' => ['required','max:10',Rule::unique('cooperatives')->ignore($currentCooperative->id)],
-            'name' => 'required|max:150',
-            'email' => ['required','email','max:255', Rule::unique('users')->ignore($currentCooperative->user->id)],
-            'phone_number' => ['max:15',Rule::unique('cooperatives')->ignore($currentCooperative->id)],
-            'movil_number' => ['max:15',Rule::unique('cooperatives')->ignore($currentCooperative->id)],
-            'road_type' => 'required|max:30',
-            'road_name' => 'required|max:150',
-            'road_number' => 'required|max:5',
+            'nif' => ['sometimes','required','max:10',Rule::unique('cooperatives')->ignore($currentCooperative->id)],
+            'name' => 'sometimes|required|max:150',
+            'email' => ['sometimes','required','email','max:255', Rule::unique('users')->ignore($currentCooperative->user->id)],
+            'phone_number' => ['sometimes','max:15',Rule::unique('cooperatives')->ignore($currentCooperative->id)],
+            'road_type' => 'sometimes|required|max:30',
+            'road_name' => 'sometimes|required|max:150',
+            'road_number' => 'sometimes|required|max:5',
             'road_letter' => 'max:5',
             'road_km' => 'max:10',
             'block' => 'max:10',
@@ -149,10 +148,10 @@ class CooperativeController extends ResponseController
             'floor' => 'max:5',
             'door' => 'max:5',
             'town_entity' => 'max:50',
-            'town_name' => 'required|max:50',
-            'province' => 'required|max:50',
-            'country' => 'required|max:50',
-            'postal_code' => 'required|max:10'
+            'town_name' => 'sometimes|required|max:50',
+            'province' => 'sometimes|required|max:50',
+            'country' => 'sometimes|required|max:50',
+            'postal_code' => 'sometimes|required|max:10'
         ];
 
         //Get authenticate user id
