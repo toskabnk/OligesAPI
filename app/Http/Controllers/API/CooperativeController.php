@@ -264,6 +264,41 @@ class CooperativeController extends ResponseController
         return $this-> respondUnauthorized();
     }
 
+    public function toggleFarmerParnter($id)
+    {
+        //Get authenticate user id
+        $currentUser = Auth::user();
+
+        //Check if not null
+        if(!$currentUser){
+            return $this-> respondUnauthorized();
+        }
+
+        //Chek if the user is not a cooperative
+        if(!$currentUser->cooperative){
+            return $this->respondUnauthorized();
+        }
+
+        //Check if farmer exist
+        $farmer = Farmer::find($id);
+        if(!$farmer){
+            return $this->respondNotFound();
+        }
+
+        //Check if farmer is registered in the cooperative
+        if($farmer->cooperatives->contains($currentUser->cooperative)) {
+            //Save farmer partner status
+            $partner = $farmer->cooperatives->find($currentUser->cooperative->id)->pivot->partner;
+
+            //Update partner data
+            $farmer->cooperatives()->updateExistingPivot($currentUser->cooperative->id, ['partner' => !$partner]);
+
+            //Respond success
+            return $this->respondSuccess(['message' => 'Farmer partner status updated']);
+        } else {
+            return $this->respondForbidden('Farmer is not registered in the cooperative');
+        }
+    }
 
     //Register the farmer to the cooperative
     //? Should this function be in FarmerController?

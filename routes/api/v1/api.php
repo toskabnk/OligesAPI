@@ -46,6 +46,7 @@ Route::group(['middleware' => 'auth:api'], function(){
         Route::get('/{id}', [CooperativeController::class, 'view']);
         //? Should this path be /farmer/cooperative?
         Route::post('/farmer', [CooperativeController::class, 'addFarmerToCooperative']);
+        Route::put('/farmer/{id}', [CooperativeController::class, 'toggleFarmerParnter']);
         Route::put('/{id}', [CooperativeController::class, 'update']);
         Route::delete('/farmer/{id}', [CooperativeController::class, 'deleteFarmerFromCooperative']);
     });
