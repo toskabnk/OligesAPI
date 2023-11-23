@@ -26,7 +26,7 @@ Route::group(['prefix' => 'auth'], function(){
             Route::post('/login', [AuthController::class, 'cooperativeLogin']);
             Route::post('/', [AuthController::class, 'registerCooperative']);
         });
-    
+
     Route::group(['prefix' => 'farmer'], function(){
             Route::post('/login', [AuthController::class, 'farmerLogin']);
             Route::post('/', [AuthController::class, 'registerFarmer']);
@@ -45,14 +45,14 @@ Route::group(['middleware' => 'auth:api'], function(){
         Route::get('/farmers', [CooperativeController::class, 'viewCooperativeFarmers']);
         Route::get('/{id}', [CooperativeController::class, 'view']);
         //? Should this path be /farmer/cooperative?
-        Route::post('/farmer/{id}', [CooperativeController::class, 'addFarmerToCooperative']);
+        Route::post('/farmer', [CooperativeController::class, 'addFarmerToCooperative']);
         Route::put('/{id}', [CooperativeController::class, 'update']);
         Route::delete('/farmer/{id}', [CooperativeController::class, 'deleteFarmerFromCooperative']);
     });
 
     //Farmer routes
     Route::group(['prefix' => 'farmer'], function()
-    {        
+    {
         Route::get('/cooperatives', [FarmerController::class, 'viewFarmerCooperatives']);
         Route::get('/{id}', [FarmerController::class, 'view']);
         Route::post('/', [FarmerController::class, 'create']);

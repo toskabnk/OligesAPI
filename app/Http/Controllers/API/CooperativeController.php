@@ -267,11 +267,12 @@ class CooperativeController extends ResponseController
 
     //Register the farmer to the cooperative
     //? Should this function be in FarmerController?
-    public function addFarmerToCooperative(Request $request, $id)
+    public function addFarmerToCooperative(Request $request)
     {
         $rules = [
-            'partner' => 'required|boolean',
-            'active' => 'required|boolean'
+            'email' => 'required|email|max:255',
+            'dni' => 'required|max:10',
+            'partner' => 'required|boolean'
         ];
 
         //Get authenticate user id
@@ -287,12 +288,6 @@ class CooperativeController extends ResponseController
             return $this->respondUnauthorized();
         }
 
-        //Check if farmer exist
-        $farmer = Farmer::find($id);
-        if(!$farmer){
-            return $this->respondNotFound();
-        }
-
         //Validate the data
         $data = $this->validateData($request, $rules);
 
@@ -301,10 +296,23 @@ class CooperativeController extends ResponseController
             return $data;
         }
 
+        //Get the data from the request
+        $dni = $data['dni'];
+        $email = $data['email'];
+
+        //Check if farmer exist
+        $farmer = Farmer::whereHas('user', function ($query) use ($email, $dni) {
+            $query->where('email', $email)->where('dni', $dni);
+        })->first();
+
+        if(!$farmer){
+            return $this->respondNotFound();
+        }
+
         //Intermediate data
         $intermediateData = [
             'partner' => $data['partner'],
-            'active' => $data['active'],
+            'active' => true,
         ];
 
         //Check if farmer is registered in the cooperative
@@ -322,7 +330,7 @@ class CooperativeController extends ResponseController
                 return $this->respondSuccess(['message' => 'Farmer is added to the cooperative, again']);
             } else {
                 //? Other type of response if already registered?
-                return $this->respondSuccess(['message' => 'Farmer is alredy registered in the cooperative']);
+                return $this->respondBadRequest('Farmer is alredy registered in the cooperative');
             }
         }
 
