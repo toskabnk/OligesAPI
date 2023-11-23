@@ -18,16 +18,16 @@ class ReceiptController extends ResponseController
     {
         //Actual date
         $actualDate = Carbon::now();
-    
+
         // Check if the current date is before or after September 1st
         $campaignYear = $actualDate->month >= 9 ? $actualDate->year : $actualDate->year - 1;
-    
+
         //Campaign start date (September 1)
         $startDate = Carbon::create($campaignYear, 9, 1);
-    
+
         //Campaign end date (August 31)
         $endDate = Carbon::create($campaignYear + 1, 8, 31);
-    
+
         //Check if the current date is within the range of the current campaign
         if ($actualDate->gte($startDate) && $actualDate->lte($endDate)) {
             //Return campaign name
@@ -54,7 +54,7 @@ class ReceiptController extends ResponseController
     {
         //Request validation with the rules
         $validation = Validator::make($request->all(),$rules);
-        
+
         //If validation fails, send a reponse with the errors
         if($validation->fails())
         {
@@ -139,7 +139,7 @@ class ReceiptController extends ResponseController
             foreach($weights as $weight) {
                 //Added the id of the receipt created
                 $weight['receipt_id'] = $receipt->id;
-                
+
                 //Create the weight
                 $addedWeight = Weight::create($weight);
 
@@ -156,10 +156,10 @@ class ReceiptController extends ResponseController
             DB::commit();
 
             //TODO: Send email with the receipt
-            
+
             //? Send pdf with the receipt or generate it in the frontend?
             //TODO: Send pdf back in response
-            
+
             return $this->respondSuccess($data);
         } catch (\Exception $e) {
             //If the transaction hace errors, do a rollback
@@ -232,7 +232,7 @@ class ReceiptController extends ResponseController
         }
 
         //Save the results
-        $receipts = $query->select('date','albaran_number', 'farmer_id')->get();
+        $receipts = $query->select('id', 'date','albaran_number', 'farmer_id', 'campaign')->get();
 
         //Return the results
         return $this->respondSuccess($receipts);
@@ -249,13 +249,10 @@ class ReceiptController extends ResponseController
         }
 
         //Check if the farmer exist
-        $receipt = Receipt::find($id);
+        $receipt = Receipt::with('farmer.address','farm','weights')->find($id);
         if(!$receipt) {
             return $this->respondNotFound();
         }
-
-        //Load relationship
-        $receipt->weights;
 
         //Check if cooperative own the receipt
         if($currentUser->cooperative) {
@@ -317,13 +314,13 @@ class ReceiptController extends ResponseController
 
             //End the transaction
             DB::commit();
-            
+
             //Return success message
             return $this->respondSuccess(['message' => 'Receipt deleted']);
         } catch (\Exception $e) {
             //If the transaction have errors, do a rollback
             DB::rollback();
-           
+
             //Return the error message (Debugging only)
             return $this->respondError($e->getMessage(), 500);
             //TODO: Change in production
@@ -331,5 +328,5 @@ class ReceiptController extends ResponseController
         }
     }
 
-    
+
 }
