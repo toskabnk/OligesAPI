@@ -249,7 +249,7 @@ class ReceiptController extends ResponseController
         }
 
         //Check if the farmer exist
-        $receipt = Receipt::with('farmer.address','farm','weights')->find($id);
+        $receipt = Receipt::with('farmer.address','farm.address','weights', 'cooperative')->find($id);
         if(!$receipt) {
             return $this->respondNotFound();
         }
@@ -306,11 +306,11 @@ class ReceiptController extends ResponseController
         {
             //Delete each weight asociated with the receipt
             foreach($weights as $weight){
-                $weight->destroy();
+                $weight->delete();
             }
 
             //Delete the receipt
-            $receipt->destroy();
+            $receipt->delete();
 
             //End the transaction
             DB::commit();

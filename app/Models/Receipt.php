@@ -38,6 +38,6 @@ class Receipt extends Model
     }
 
     public function farm(): BelongsTo{
-        return $this->belongsTo(Address::class);
+        return $this->belongsTo(Farm::class);
     }
 }
