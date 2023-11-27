@@ -249,7 +249,7 @@ class ReceiptController extends ResponseController
         }
 
         //Check if the farmer exist
-        $receipt = Receipt::with('farmer.address','farm.address','weights', 'cooperative')->find($id);
+        $receipt = Receipt::with('farmer.address','farm.address','weights', 'cooperative.address')->find($id);
         if(!$receipt) {
             return $this->respondNotFound();
         }

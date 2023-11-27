@@ -16,7 +16,7 @@ class FarmController extends ResponseController
     protected function validateData(Request $request, $rules ){
         //Request validation with the rules
         $validation = Validator::make($request->all(),$rules);
-        
+
         //If validation fails, send a reponse with the errors
         if($validation->fails())
         {
@@ -30,7 +30,7 @@ class FarmController extends ResponseController
     //Create the farm for farmer with that id
     public function create(Request $request, $id)
     {
-        
+
         //Check if farmer exist
         $currentFarmer = Farmer::find($id);
         if(!$currentFarmer){
@@ -93,7 +93,7 @@ class FarmController extends ResponseController
         if($data instanceof JsonResponse){
             return $data;
         }
-        
+
         //Transaction for creating the entrys in the BD
         DB::beginTransaction();
         try
@@ -110,13 +110,13 @@ class FarmController extends ResponseController
 
             //End the transaction
             DB::commit();
-            
+
             //Return success message
             return $this->respondSuccess(['message' => 'Farm registered!'],201);
         } catch (\Exception $e) {
             //If the transaction have errors, do a rollback
             DB::rollback();
-           
+
             //Return the error message (Debugging only)
             return $this->respondError($e->getMessage(), 500);
             //TODO: Change in production
@@ -191,13 +191,13 @@ class FarmController extends ResponseController
 
             //End the transaction
             DB::commit();
-            
+
             //Return success message
             return $this->respondSuccess(['message' => 'Farm edited!']);
         } catch (\Exception $e) {
             //If the transaction have errors, do a rollback
             DB::rollback();
-           
+
             //Return the error message (Debugging only)
             return $this->respondError($e->getMessage(), 500);
             //TODO: Change in production
@@ -225,6 +225,7 @@ class FarmController extends ResponseController
         if($currentUser->farmer){
             //Check if the user is the same as the farmer
             if($currentFarmer->id == $currentUser->farmer->id){
+                $currentFarmer->farms->load('address');
                 return $this->respondSuccess(['farm' => $currentFarmer->farms]);
             } else {
                 return $this->respondUnauthorized();

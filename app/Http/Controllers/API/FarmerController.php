@@ -36,7 +36,7 @@ class FarmerController extends ResponseController
     protected function validateData(Request $request, $rules ){
         //Request validation with the rules
         $validation = Validator::make($request->all(),$rules);
-        
+
         //If validation fails, send a reponse with the errors
         if($validation->fails())
         {
@@ -79,20 +79,20 @@ class FarmerController extends ResponseController
 
         //Validate request
         $data = $this->validateData($request, $rules);
-        
+
         //If data is a response, return the response
         if($data instanceof JsonResponse){
             return $data;
         }
-        
+
         //Get authenticate user id
         $currentUser = Auth::user();
-        
+
         //Check if not null
         if(!$currentUser){
             return $this-> respondUnauthorized();
         }
-        
+
         //Check if the farmer is created from a cooperative
         if(!$currentUser->cooperative){
             return $this-> respondUnauthorized();
@@ -132,16 +132,16 @@ class FarmerController extends ResponseController
 
             //Register the user to the cooperative
             $farmer->cooperatives()->attach($currentUser->cooperative->id, $intermediateData);
-            
+
             //End the transaction
             DB::commit();
-            
+
             //Return success message
             return $this->respondSuccess(['message' => 'Farmer registered!'],201);
         } catch (\Exception $e) {
             //If the transaction have errors, do a rollback
             DB::rollback();
-           
+
             //Return the error message (Debugging only)
             return $this->respondError($e->getMessage(), 500);
             //TODO: Change in production
@@ -266,7 +266,9 @@ class FarmerController extends ResponseController
 
         //Chek if the user is a farmer
         if($currentUser->farmer){
-            return $this->respondSuccess(['farmer' => $currentUser->farmer->cooperatives]);
+            //Load relationships data
+            $currentUser->farmer->load('cooperatives.user');
+            return $this->respondSuccess(['cooperatives' => $currentUser->farmer->cooperatives]);
         }
 
         //If not, return unauthorized
