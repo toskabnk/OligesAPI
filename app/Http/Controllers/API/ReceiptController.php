@@ -328,5 +328,31 @@ class ReceiptController extends ResponseController
         }
     }
 
+    //Load last receipt from the cooperative
+    public function loadLastReceipt()
+    {
+        //Get authenticate user
+        $currentUser = Auth::user();
 
+        //Check if not null
+        if(!$currentUser){
+            return $this-> respondUnauthorized();
+        }
+
+        //Check if user is a cooperative
+        if(!($currentUser->cooperative)) {
+            return $this-> respondUnauthorized();
+        }
+
+        //Get the last receipt from the cooperative
+        $receipt = Receipt::where('cooperative_id', $currentUser->cooperative->id)->orderBy('id', 'desc')->first();
+
+        //Check if the receipt exist
+        if(!$receipt) {
+            return $this->respondNotFound();
+        }
+
+        //Return the receipt
+        return $this->respondSuccess(['receipt' => $receipt->only('albaran_number', 'campaign')]);
+    }
 }

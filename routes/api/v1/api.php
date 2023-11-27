@@ -72,6 +72,7 @@ Route::group(['middleware' => 'auth:api'], function(){
     Route::group(['prefix' => 'receipt'], function()
     {
         Route::get('/', [ReceiptController::class, 'viewReceiptsCooperative']);
+        Route::get('/last', [ReceiptController::class, 'loadLastReceipt']);
         Route::get('/{id}', [ReceiptController::class, 'viewDetails']);
         Route::post('/', [ReceiptController::class, 'create']);
         //? Is neccesary?
