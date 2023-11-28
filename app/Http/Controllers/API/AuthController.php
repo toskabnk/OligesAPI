@@ -244,4 +244,46 @@ class AuthController extends ResponseController
         //Return the user data
         return $this->respondSuccess($currentUser);
     }
+
+    public function changePassword(Request $request)
+    {
+        //Validation rules
+        $rules = [
+            'old_password' => 'required',
+            'new_password' => 'required|confirmed|min:8',
+            'new_password_confirmation' => 'required|same:new_password'
+        ];
+
+        //Validate request
+        $data = $this->validateData($request, $rules);
+
+        //If data is a response, return the response
+        if($data instanceof JsonResponse){
+            return $data;
+        }
+
+        //Get current user
+        /** @var \App\Models\User */
+        $currentUser = Auth::user();
+
+        //If null, respond unauthorized
+        if(!$currentUser){
+            return $this-> respondUnauthorized();
+        }
+
+        //Check if the old password is correct
+        if(!Hash::check($data['old_password'], $currentUser->password)){
+            return $this->respondUnauthorized('Invalid credentials.');
+        }
+
+        //Update the password
+        $currentUser->password = Hash::make($data['new_password']);
+        $currentUser->save();
+
+        //Revoke old access tokens except the current
+        $currentUser->tokens()->where('id', '!=', $currentUser->token()->id)->delete();
+
+        //Return success message
+        return $this->respondSuccess(['message' => 'Password changed!']);
+    }
 }
