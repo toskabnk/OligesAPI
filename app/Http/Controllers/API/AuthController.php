@@ -34,7 +34,7 @@ class AuthController extends ResponseController
     protected function validateData(Request $request, $rules ){
         //Request validation with the rules
         $validation = Validator::make($request->all(),$rules);
-        
+
         //If validation fails, send a reponse with the errors
         if($validation->fails())
         {
@@ -91,13 +91,13 @@ class AuthController extends ResponseController
 
             //Finalice the transaction
             DB::commit();
-            
+
             //Return success message
             return $this->respondSuccess(['message' => 'Cooperative registered!'],201);
         } catch (\Exception $e) {
             //If the transaction have errors, do a rollback
             DB::rollback();
-           
+
             //Return the error message (Debugging only)
             return $this->respondError($e->getMessage(), 500);
             //TODO: Change in production
@@ -153,13 +153,13 @@ class AuthController extends ResponseController
 
             //Finalice the transaction
             DB::commit();
-            
+
             //Return success message
             return $this->respondSuccess(['message' => 'Farmer registered!'],201);
         } catch (\Exception $e) {
             //If the transaction have errors, do a rollback
             DB::rollback();
-           
+
             //Return the error message (Debugging only)
             return $this->respondError($e->getMessage(), 500);
             //TODO: Change in production
@@ -167,7 +167,7 @@ class AuthController extends ResponseController
         }
     }
 
-    protected function login(Request $request)
+    public function login(Request $request)
     {
         //Validation rules
         $rules = [
@@ -180,7 +180,7 @@ class AuthController extends ResponseController
 
         //If data is a response, return the response
         if($data instanceof JsonResponse){
-            return $data;
+            return $this->respondUnauthorized($data);
         }
 
         //Check credentials
@@ -191,61 +191,16 @@ class AuthController extends ResponseController
         //Get the auth user and generate access token
         /** @var \App\Models\User */
         $currentUser = Auth::user();
+        $currentUser->load('cooperative', 'farmer');
+        $accessToken = $currentUser->createToken('authToken')->accessToken;
 
         //Creamos la estructura de la respuesta
         $data = [
-            'user' => $currentUser
+            'user' => $currentUser,
+            'access_token' => $accessToken
         ];
 
         //Return the data
-        return $data;
-    }
-
-    public function cooperativeLogin(Request $request)
-    {
-        //Login with the data
-        $data = $this->login($request);
-
-        //If data is a response, return the response
-        if($data instanceof JsonResponse){
-            return $data;
-        }
-
-        //Get the cooperative data
-        $cooperative = $data['user']->cooperative;
-
-        //If null, respond unauthorized
-        if(!$cooperative){
-            return $this->respondUnauthorized('Invalid credentials.');
-        }
-        //Save the cooperative data, create access token and save it
-        $data['access_token'] = $data['user']->createToken('authToken')->accessToken;
-
-        //Respond success with the data
-        return $this->respondSuccess($data);
-    }
-
-    public function farmerLogin(Request $request)
-    {
-        //Login with the data
-        $data = $this->login($request);
-
-        //If data is a response, return the response
-        if($data instanceof JsonResponse){
-            return $data;
-        }
-
-        //Get the cooperative data
-        $farmer = $data['user']->farmer;
-
-        //If null, respond unauthorized
-        if(!$farmer){
-            return $this->respondUnauthorized('Invalid credentials.');
-        }
-        //Save the cooperative data, create access token and save it
-        $data['access_token'] = $data['user']->createToken('authToken')->accessToken;
-
-        //Respond success with the data
         return $this->respondSuccess($data);
     }
 

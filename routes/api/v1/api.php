@@ -22,13 +22,12 @@ use App\Http\Controllers\API\ReceiptController;
 
 //Routes without auth
 Route::group(['prefix' => 'auth'], function(){
+    Route::post('/login', [AuthController::class, 'login']);
     Route::group(['prefix' => 'cooperative'], function(){
-            Route::post('/login', [AuthController::class, 'cooperativeLogin']);
             Route::post('/', [AuthController::class, 'registerCooperative']);
         });
 
     Route::group(['prefix' => 'farmer'], function(){
-            Route::post('/login', [AuthController::class, 'farmerLogin']);
             Route::post('/', [AuthController::class, 'registerFarmer']);
     });
 });
