@@ -424,4 +424,39 @@ class CooperativeController extends ResponseController
         }
         return $this->respondSuccess(['message' => 'Farmer is not from the cooperative']);
     }
+
+    public function addSign(Request $request)
+    {
+
+        $currentUser = Auth::user();
+
+        //Check if not null
+        if(!$currentUser){
+            return $this-> respondUnauthorized();
+        }
+
+        $rules = [
+            'cooperative_sign' => 'required'
+        ];
+
+        //Chek if the user is not a cooperative
+        if(!$currentUser->cooperative){
+            return $this->respondUnauthorized();
+        }
+
+        //Validate the data
+        $data = $this->validateData($request, $rules);
+
+        //If data is a response, return the response
+        if($data instanceof JsonResponse){
+            return $data;
+        }
+
+        //Save the sign
+        $currentUser->cooperative->cooperative_sign = $data['cooperative_sign'];
+        $currentUser->cooperative->save();
+
+        //Respond success
+        return $this->respondSuccess(['message' => 'Cooperative sign added']);
+    }
 }
