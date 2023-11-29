@@ -41,7 +41,7 @@ class ReceiptController extends ResponseController
         $lastNumber = Receipt::select('albaran_number')
         ->where('cooperative_id', $cooperativeId)
         ->where('campaign', $campaignYear)
-        ->max('albaran_number');
+        ->max(DB::raw('CAST(albaran_number AS UNSIGNED)'));
 
         //If null, start at 1, else lastNumber +1
         $newNumber = $lastNumber ? $lastNumber + 1 : 1;
