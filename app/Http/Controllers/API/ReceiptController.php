@@ -35,6 +35,27 @@ class ReceiptController extends ResponseController
         }
     }
 
+    protected function getPreviousCampaign()
+    {
+        //Actual date
+        $actualDate = Carbon::now();
+
+        // Check if the current date is before or after September 1st
+        $campaignYear = $actualDate->month >= 9 ? $actualDate->year : $actualDate->year - 1;
+
+        //Campaign start date (September 1)
+        $startDate = Carbon::create($campaignYear, 9, 1);
+
+        //Campaign end date (August 31)
+        $endDate = Carbon::create($campaignYear + 1, 8, 31);
+
+        //Check if the current date is within the range of the current campaign
+        if ($actualDate->gte($startDate) && $actualDate->lte($endDate)) {
+            //Return campaign name
+            return ($campaignYear - 1). "-" . ($campaignYear);
+        }
+    }
+
     protected function generateAlabaranNumber($cooperativeId, $campaignYear)
     {
         //Get the last number from the campaign and cooperative
@@ -354,5 +375,344 @@ class ReceiptController extends ResponseController
 
         //Return the receipt
         return $this->respondSuccess(['receipt' => $receipt->only('albaran_number', 'campaign')]);
+    }
+
+    /**
+     * Generate the total kilos and the average sampling of all the receipts from the cooperative by campaign grouped by farmer and type
+     *
+     * @param Request $request
+     *
+     * @return JsonResponse
+     */
+    public function getTotalByCampaing(Request $request)
+    {
+        //Get authenticate user
+        $currentUser = Auth::user();
+
+        //Check if not null
+        if(!$currentUser){
+            return $this-> respondUnauthorized();
+        }
+
+        //Check if user is a cooperative
+        if(!($currentUser->cooperative)) {
+            return $this-> respondForbidden();
+        }
+
+        //Validation rules
+        $rules = [
+            'campaign' => 'required',
+        ];
+
+        //Validate the data
+        $data = $this->validateData($request, $rules);
+
+        //If data is a response, return the response
+        if($data instanceof JsonResponse){
+            return $data;
+        }
+
+        $campaign = $data['campaign'];
+
+        //Get the sum of the kilos and the average of the sampling of all the receipts from the cooperative grouped by farmer and type
+        $kilos = Weight::select('farmers.id','type',
+            DB::raw('SUM(kilos) as total_kilos'),
+            DB::raw('AVG(sampling) as avg_sampling'))
+        ->join('receipts', 'weights.receipt_id', '=', 'receipts.id')
+        ->join('farmers', 'receipts.farmer_id', '=', 'farmers.id')
+        ->where('receipts.cooperative_id', $currentUser->cooperative->id)
+        ->whereYear('receipts.date', $campaign)
+        ->groupBy('farmers.id', 'type')
+        ->get();
+
+        //Get all of the unique ids of the farmers
+        $uniqueIds = $kilos->pluck('id')->unique()->toArray();
+
+        //Get all the farmers with the unique ids
+        $farmers = Farmer::whereIn('id', $uniqueIds)->get();
+
+        //Create an array with the farmers and the kilos
+        $data = [];
+        foreach($farmers as $farmer){
+            $farmerData = [
+                'farmer' => $farmer,
+                'kilos' => []
+            ];
+
+            foreach($kilos as $kilo){
+                if($farmer->id == $kilo->id){
+                    array_push($farmerData['kilos'], $kilo);
+                }
+            }
+
+            array_push($data, $farmerData);
+        }
+
+        //Return the data
+        return $this->respondSuccess($data);
+    }
+
+    public function getTotalByCampaignGroupedBySampling(Request $request)
+    {
+        //Get authenticate user
+        $currentUser = Auth::user();
+
+        //Check if not null
+        if(!$currentUser){
+            return $this-> respondUnauthorized();
+        }
+
+        //Check if user is a cooperative
+        if(!($currentUser->cooperative)) {
+            return $this-> respondForbidden();
+        }
+
+        //Validation rules
+        $rules = [
+            'campaign' => 'required',
+        ];
+
+        //Validate the data
+        $data = $this->validateData($request, $rules);
+
+        //If data is a response, return the response
+        if($data instanceof JsonResponse){
+            return $data;
+        }
+
+        $campaign = $data['campaign'];
+
+        $kilos = Weight::select(
+            'farmers.id',
+            'type',
+            'sampling',
+            DB::raw('SUM(kilos) as total_kilos'),
+        )
+        ->join('receipts', 'weights.receipt_id', '=', 'receipts.id')
+        ->join('farmers', 'receipts.farmer_id', '=', 'farmers.id')
+        ->where('receipts.cooperative_id', $currentUser->cooperative->id)
+        ->where('receipts.campaign', $campaign)
+        ->orderBy(DB::raw('CAST(sampling AS UNSIGNED)'), 'desc')
+        ->groupBy('farmers.id', 'type', 'sampling')
+        ->get();
+        //Get all of the unique ids of the farmers
+        $uniqueIds = $kilos->pluck('id')->unique()->toArray();
+
+        //Get all the farmers with the unique ids
+        $farmers = Farmer::whereIn('id', $uniqueIds)->get();
+
+        //Create an array with the farmers and the kilos
+        $data = [];
+        foreach($farmers as $farmer){
+            $farmerData = [
+                'farmer' => $farmer,
+                'kilos' => []
+            ];
+
+            foreach($kilos as $kilo){
+                if($farmer->id == $kilo->id){
+                    array_push($farmerData['kilos'], $kilo);
+                }
+            }
+
+            array_push($data, $farmerData);
+        }
+
+        //Return the data
+        return $this->respondSuccess($data);
+    }
+
+    public function getTotalKilosByFarmer(Request $request, $id)
+    {
+        //Get authenticate user
+        $currentUser = Auth::user();
+
+        //Check if not null
+        if(!$currentUser){
+            return $this-> respondUnauthorized();
+        }
+        //Check if user is a cooperative
+        if(!($currentUser->cooperative)) {
+            return $this-> respondForbidden();
+        }
+
+        //Validation rules
+        $rules = [
+            'campaign' => 'required',
+        ];
+
+        //Validate the data
+        $data = $this->validateData($request, $rules);
+
+        //If data is a response, return the response
+        if($data instanceof JsonResponse){
+            return $data;
+        }
+
+        //Check if the farmer exist
+        $farmer = Farmer::find($id);
+        if(!$farmer) {
+            return $this->respondNotFound();
+        }
+
+        //Check if the farmer is from the cooperative
+        if(!$currentUser->cooperative->farmers->contains($farmer)){
+            return $this->respondUnauthorized();
+        }
+
+        $campaign = $data['campaign'];
+
+        //Get the sum of all the kilos of the farmer
+        $totalKilos = Weight::select(
+            'type',
+            DB::raw('SUM(kilos) as total_kilos'),
+            DB::raw('AVG(sampling) as avg_sampling'))
+        ->join('receipts', 'weights.receipt_id', '=', 'receipts.id')
+        ->where('receipts.cooperative_id', $currentUser->cooperative->id)
+        ->where('receipts.farmer_id', $farmer->id)
+        ->where('receipts.campaign', $campaign)
+        ->groupBy('type')
+        ->get();
+
+        //Get all the kilos of the farmer this campaign
+        $kilos = Weight::select(
+            'weights.created_at', 'type','kilos', 'sampling',
+        )
+        ->join('receipts', 'weights.receipt_id', '=', 'receipts.id')
+        ->where('receipts.cooperative_id', $currentUser->cooperative->id)
+        ->where('receipts.farmer_id', $farmer->id)
+        ->where('receipts.campaign', $campaign)
+        ->orderBy('weights.created_at', 'asc')
+        ->get();
+
+        //Group the kilos by created_at as an array and delete the created_at
+        $kilos = $kilos->groupBy('created_at')->map(function ($item, $key) {
+            return $item->map(function ($item, $key) {
+                unset($item['created_at']);
+                return $item;
+            });
+        });
+        $response = [
+            'total_kilos' => $totalKilos,
+            'kilos' => $kilos,
+        ];
+
+        //Return the data
+        return $this->respondSuccess($response);
+    }
+
+    public function getTotalActualCampaignAndPrevious(){
+        //Get authenticate user
+        $currentUser = Auth::user();
+
+        //Check if not null
+        if(!$currentUser){
+            return $this-> respondUnauthorized();
+        }
+
+        //Check if user is a cooperative
+        if(!($currentUser->cooperative)) {
+            return $this-> respondForbidden();
+        }
+
+        //Campaigns
+        $actualCampaign = $this->getCampaign();
+        $previousCampaign = $this->getPreviousCampaign();
+
+        //Get the sum of all the kilos of the actual campaign
+        $actualKilos = Weight::select(
+            DB::raw('SUM(kilos) as total_kilos')
+        )
+        ->join('receipts', 'weights.receipt_id', '=', 'receipts.id')
+        ->where('receipts.cooperative_id', $currentUser->cooperative->id)
+        ->where('receipts.campaign', $actualCampaign)
+        ->first();
+
+        //Get the sum of all the kilos of the previous campaign
+        $previousKilos = Weight::select(
+            DB::raw('SUM(kilos) as total_kilos')
+        )
+        ->join('receipts', 'weights.receipt_id', '=', 'receipts.id')
+        ->where('receipts.cooperative_id', $currentUser->cooperative->id)
+        ->where('receipts.campaign', $previousCampaign)
+        ->first();
+
+        //Return the data
+        return $this->respondSuccess([
+            'actual_campaign' => $actualKilos,
+            'previous_campaign' => $previousKilos,
+        ]);
+    }
+
+    public function getNumberFarmersByCampaign()
+    {
+        //Get authenticate user
+        $currentUser = Auth::user();
+
+        //Check if not null
+        if(!$currentUser){
+            return $this-> respondUnauthorized();
+        }
+        //Check if user is a cooperative
+        if(!($currentUser->cooperative)) {
+            return $this-> respondForbidden();
+        }
+
+        //Actual campaign
+        $actualCampaign = $this->getCampaign();
+
+        //Get the unique number of farmers that delivered receipts in the actual campaign
+        $farmers = Receipt::select(
+            DB::raw('COUNT(DISTINCT(farmer_id)) as total_farmers')
+        )
+        ->where('cooperative_id', $currentUser->cooperative->id)
+        ->where('campaign', $actualCampaign)
+        ->first();
+
+        //Get the total number of farmers in the cooperative
+        $totalFarmers = $currentUser->cooperative->farmers->count();
+
+        //Actual date
+        $actualDate = Carbon::now();
+
+        //Get the total of farmers that register in this campaign
+        $newsFarmers = Farmer::select(
+            DB::raw('COUNT(DISTINCT(farmers.id)) as total_farmers')
+        )
+        ->join('cooperative_farmer', 'farmers.id', '=', 'cooperative_farmer.farmer_id')
+        ->where('cooperative_farmer.cooperative_id', $currentUser->cooperative->id)
+        ->whereYear('cooperative_farmer.created_at', $actualDate->year)
+        ->first();
+
+        $response = [
+            'total_farmers' => $totalFarmers,
+            'farmers' => $farmers->total_farmers,
+            'new_farmers' => $newsFarmers->total_farmers,
+        ];
+
+        //Return the data
+        return $this->respondSuccess($response);
+    }
+
+    public function getCampaignsList()
+    {
+        //Get authenticate user
+        $currentUser = Auth::user();
+
+        //Check if not null
+        if(!$currentUser){
+            return $this-> respondUnauthorized();
+        }
+
+        //Check if user is a cooperative
+        if(!($currentUser->cooperative)) {
+            return $this-> respondForbidden();
+        }
+
+        //Get all the campaigns from the cooperative
+        $campaigns = Receipt::select('campaign')->where('cooperative_id', $currentUser->cooperative->id)->distinct()->get();
+
+        //Return the data
+        return $this->respondSuccess($campaigns);
     }
 }

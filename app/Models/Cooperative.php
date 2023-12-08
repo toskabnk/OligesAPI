@@ -38,6 +38,6 @@ class Cooperative extends Model
     }
 
     public function farmers(): BelongsToMany{
-        return $this->belongsToMany(Farmer::class)->withPivot('partner','active');
+        return $this->belongsToMany(Farmer::class)->withPivot('partner','active')->withTimestamps();
     }
 }

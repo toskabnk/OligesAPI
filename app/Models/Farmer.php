@@ -39,7 +39,7 @@ class Farmer extends Model
     }
 
     public function cooperatives(): BelongsToMany{
-        return $this->belongsToMany(Cooperative::class)->withPivot('partner', 'active');
+        return $this->belongsToMany(Cooperative::class)->withPivot('partner', 'active')->withTimestamps();
     }
 
     public function farms(): HasMany{

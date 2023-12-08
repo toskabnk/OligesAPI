@@ -82,6 +82,17 @@ Route::group(['middleware' => 'auth:api'], function(){
 
     });
 
+    //Stadistics routes
+    Route::group(['prefix' => 'stadistics'], function()
+    {
+        Route::get('/totalByCampaign', [ReceiptController::class, 'getTotalByCampaing']);
+        Route::get('/totalByCampaignSampling', [ReceiptController::class, 'getTotalByCampaignGroupedBySampling']);
+        Route::get('/kpiReceipt', [ReceiptController::class, 'getTotalActualCampaignAndPrevious']);
+        Route::get('/kpiFarmer', [ReceiptController::class, 'getNumberFarmersByCampaign']);
+        Route::get('/campaigns', [ReceiptController::class, 'getCampaignsList']);
+        Route::get('/totalByFarmer/{id}', [ReceiptController::class, 'getTotalKilosByFarmer']);
+
+    });
     //Farm routes
     Route::group(['prefix' => 'farm'], function()
     {
