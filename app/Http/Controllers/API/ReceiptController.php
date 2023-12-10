@@ -434,7 +434,7 @@ class ReceiptController extends ResponseController
         //Get the sum of the kilos and the average of the sampling of all the receipts from the cooperative grouped by farmer and type
         $kilos = Weight::select('farmers.id','type',
             DB::raw('SUM(kilos) as total_kilos'),
-            DB::raw('AVG(sampling) as avg_sampling'))
+            DB::raw('ROUND(AVG(sampling),0) as avg_sampling'))
         ->join('receipts', 'weights.receipt_id', '=', 'receipts.id')
         ->join('farmers', 'receipts.farmer_id', '=', 'farmers.id')
         ->where('receipts.cooperative_id', $currentUser->cooperative->id)
@@ -583,7 +583,7 @@ class ReceiptController extends ResponseController
         $totalKilos = Weight::select(
             'type',
             DB::raw('SUM(kilos) as total_kilos'),
-            DB::raw('AVG(sampling) as avg_sampling'))
+            DB::raw('ROUND(AVG(sampling),0) as avg_sampling'))
         ->join('receipts', 'weights.receipt_id', '=', 'receipts.id')
         ->where('receipts.cooperative_id', $currentUser->cooperative->id)
         ->where('receipts.farmer_id', $farmer->id)
