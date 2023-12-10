@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Mail\AddFarmerToCoopMail;
 use App\Models\Address;
 use App\Models\Cooperative;
 use App\Models\Farmer;
@@ -11,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -371,6 +373,15 @@ class CooperativeController extends ResponseController
 
         //Register the user to the cooperative
         $farmer->cooperatives()->attach($currentUser->cooperative->id, $intermediateData);
+
+        //Email data
+        $emailData = [
+            'name' => $currentUser->cooperative->name,
+            'email' => $currentUser->email,
+            'nif' => $currentUser->cooperative->nif,
+        ];
+
+        Mail::to($data['email'])->queue(new AddFarmerToCoopMail($emailData));
 
         return $this->respondSuccess(['message' => 'Farmer added to the cooperative']);
     }

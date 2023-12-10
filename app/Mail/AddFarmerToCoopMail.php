@@ -3,24 +3,25 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Address;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class RegisterMail extends Mailable
+class AddFarmerToCoopMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    protected $user;
+    protected $data;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($user)
+    public function __construct($data)
     {
-        $this->user = $user;
+        $this->data = $data;
     }
 
     /**
@@ -33,7 +34,7 @@ class RegisterMail extends Mailable
             replyTo: [
                 new Address('support@oliges.com', 'Oliges Support'),
             ],
-            subject: 'Welcome to Oliges!',
+            subject: "You've been added to ".$this->data['name'],
         );
     }
 
@@ -45,8 +46,9 @@ class RegisterMail extends Mailable
         return new Content(
             markdown: 'emails.member_register',
             with: [
-                'email' => $this->user['email'],
-                'password' => $this->user['password'],
+                'name' => $this->data['name'],
+                'email' => $this->data['email'],
+                'nif' => $this->data['nif'],
             ],
         );
     }

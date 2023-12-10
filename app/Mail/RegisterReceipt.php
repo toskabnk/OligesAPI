@@ -9,18 +9,18 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class RegisterMail extends Mailable
+class RegisterReceipt extends Mailable
 {
     use Queueable, SerializesModels;
 
-    protected $user;
+    protected $data;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($user)
+    public function __construct($data)
     {
-        $this->user = $user;
+        $this->data = $data;
     }
 
     /**
@@ -33,7 +33,7 @@ class RegisterMail extends Mailable
             replyTo: [
                 new Address('support@oliges.com', 'Oliges Support'),
             ],
-            subject: 'Welcome to Oliges!',
+            subject: 'New receipt from '.$this->data['name'],
         );
     }
 
@@ -43,10 +43,10 @@ class RegisterMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.member_register',
+            markdown: 'emails.receipt_register',
             with: [
-                'email' => $this->user['email'],
-                'password' => $this->user['password'],
+                'name' => $this->data['name'],
+                'receipt' => $this->data['receipt'],
             ],
         );
     }

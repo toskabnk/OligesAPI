@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Mail\RegisterMail;
 use App\Models\Address;
 use App\Models\Cooperative;
 use App\Models\User;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class AuthController extends ResponseController
 {
@@ -153,6 +155,15 @@ class AuthController extends ResponseController
 
             //Finalice the transaction
             DB::commit();
+
+            //Data sent to the email
+            $emailData = [
+                'email' => $data['email'],
+                'password' => null
+            ];
+
+            //TODO: Descomentar para mandar email de registro
+            Mail::to($data['email'])->queue(new RegisterMail($emailData));
 
             //Return success message
             return $this->respondSuccess(['message' => 'Farmer registered!'],201);

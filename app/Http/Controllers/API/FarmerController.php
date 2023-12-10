@@ -106,15 +106,6 @@ class FarmerController extends ResponseController
         //Insert the password into the data
         $data['password'] = $password;
 
-        //Data sent to the email
-        $emailData = [
-            'email' => $data['email'],
-            'password' => $password
-        ];
-
-        //TODO: Descomentar para mandar email de registro
-        //Mail::to($data['email'])->queue(new RegisterMail($emailData));
-
         //Transaction for creating the entrys in the BD
         DB::beginTransaction();
         try
@@ -135,6 +126,15 @@ class FarmerController extends ResponseController
 
             //End the transaction
             DB::commit();
+
+            //Data sent to the email
+            $emailData = [
+                'email' => $data['email'],
+                'password' => $password
+            ];
+
+            //TODO: Descomentar para mandar email de registro
+            Mail::to($data['email'])->queue(new RegisterMail($emailData));
 
             //Return success message
             return $this->respondSuccess(['message' => 'Farmer registered!'],201);

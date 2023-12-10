@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Mail\DeletedReceipt;
+use App\Mail\RegisterReceipt;
 use App\Models\Farmer;
 use App\Models\Receipt;
 use App\Models\Weight;
@@ -11,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class ReceiptController extends ResponseController
 {
@@ -176,7 +179,13 @@ class ReceiptController extends ResponseController
 
             DB::commit();
 
-            //TODO: Send email with the receipt
+            $mailData = [
+                'name' => $currentUser->cooperative->name,
+                'receipt' => $receipt,
+            ];
+
+            //Send the email
+            Mail::to($farmer->user->email)->send(new RegisterReceipt($mailData));
 
             //? Send pdf with the receipt or generate it in the frontend?
             //TODO: Send pdf back in response
@@ -335,6 +344,14 @@ class ReceiptController extends ResponseController
 
             //End the transaction
             DB::commit();
+
+            $mailData = [
+                'name' => $currentUser->cooperative->name,
+                'receipt' => $receipt,
+            ];
+
+            //Send the email
+            Mail::to($receipt->farmer->user->email)->send(new DeletedReceipt($mailData));
 
             //Return success message
             return $this->respondSuccess(['message' => 'Receipt deleted']);
