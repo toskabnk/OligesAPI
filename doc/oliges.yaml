@@ -1,0 +1,770 @@
+openapi: 3.0.3
+info:
+  title: OligesAPI
+  description: API for the Oliges application. 
+  version: 1.0.0
+servers:
+  - url: 'http://localhost:8080'
+
+tags:
+  - name: address
+    description: Address operations
+  - name: cooperative
+    description: Cooperative operations
+  - name: farm
+    description: Farm operations
+  - name: farmer
+    description: Farmer operations
+  - name: auth
+    description: Auth operations
+
+paths: 
+  /address:
+    post:
+      tags:
+        - address
+      summary: Creates a new address
+      description: Add a new address to the system
+      operationId: createAddress
+      requestBody:
+        description: Address data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressDTO'
+            examples:
+              Example_1:
+                value:
+                  road_type: Avenida
+                  road_name: Umbrete
+                  road_number: 12
+                  road_letter: null 
+                  road_km: null 
+                  block: null
+                  portal: null 
+                  stair: null 
+                  floor: null 
+                  door: null
+                  town_entity: null 
+                  town_name: Bollullos de la Mitacion 
+                  province: Sevilla
+                  country: España
+                  postal_code: 41807
+        required: true  
+      responses:
+        '201':
+          description: Address created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response201'
+        '422':
+          description: Validation errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response422'
+        '401':
+          description: Not authenticated or authorized
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCode500'    
+      security:
+        - bearerToken: [ ]
+    put:
+      tags:
+        - address
+      summary: Update an existing address
+      description: Update an existing address in the system
+      operationId: updateAddress
+      parameters:
+        - name: id
+          in: path
+          description: ID of the address to update
+          required: true
+          schema:
+            type: integer
+          examples:
+            Example_1:
+              value: 1
+      requestBody:
+        description: Address data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressDTO'
+            examples:
+              Example_1:
+                value:
+                  road_type: Calle
+                  road_name: Pilar de Zaragoza
+                  road_number: 1
+                  road_letter: null 
+                  road_km: null 
+                  block: null
+                  portal: null 
+                  stair: null 
+                  floor: null 
+                  door: null
+                  town_entity: null 
+                  town_name: Carrion de los Cespedes
+                  province: Sevilla
+                  country: España
+                  postal_code: 41810
+        required: true  
+      responses:
+        '200':
+          description: Address updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response201'
+        '404':
+          description: Address to edit not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+        '422':
+          description: Validation errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response422'
+        '401':
+          description: Not authenticated or authorized
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCode500'    
+      security:
+        - bearerToken: [ ] 
+  /auth/cooperative:
+    put:
+      tags:
+        - auth
+      summary: Cooperative register
+      description: Add a new Cooperative to the system
+      operationId: registerCooperative
+      requestBody:
+        description: Cooperative data
+        content:
+          application/json:
+            schema: 
+              $ref: '#/components/schemas/CooperativeRegister'
+            examples:
+              Example_1:
+                value:
+                      nif : "77443355Z"
+                      name : Cooperative Ejemplo
+                      email : ejemplo@email.com
+                      password : "123456789"
+                      password_confirmation : 123456789
+                      phone_number : 666444666
+                      road_type : Calle
+                      road_name : Calera
+                      road_number : 22
+                      town_name : Utrera
+                      province : Sevilla
+                      country : España
+                      postal_code : 44000
+      responses:
+        '201':
+          description: Cooperative registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CooperativeRegisterResponse201'
+        '422':
+          description: Validation errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response422'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCode500'
+  /auth/cooperative/login:
+    put:
+      tags:
+        - auth
+      summary: Cooperative login
+      description: Login a Cooperative
+      operationId: loginCooperative
+      requestBody:
+        description: Login data
+        content:
+          application/json:
+            schema: 
+              $ref: '#/components/schemas/Login'
+            examples:
+              Example_1:
+                value:
+                      email : ejemplo@email.com
+                      password : "123456789"
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessfulLogin'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationError'
+        '422':
+          description: Validation errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginValidationErrors'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCode500' 
+  /auth/farmer:
+    put:
+      tags:
+        - auth
+      summary: Farmer register
+      description: Add a new Farmer to the system
+      operationId: registerFarmer
+      requestBody:
+        description: Farmer data
+        content:
+          application/json:
+            schema: 
+              $ref: '#/components/schemas/FarmerRegister'
+            examples:
+              Example_1:
+                value:
+                      dni : "77443355Z"
+                      name : Antonio
+                      surname : de la Rossa
+                      email : granjero@email.com
+                      password : "123456789"
+                      password_confirmation : "123456789"
+                      phone_number : "666444666"
+                      road_type : Calle
+                      road_name : Sevilla
+                      road_number : "11"
+                      town_name : Gines
+                      province : Sevilla
+                      country : España
+                      postal_code : "45400"
+      responses:
+        '201':
+          description: Farmer registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FarmerRegisterResponse201'
+        '422':
+          description: Validation errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response422'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCode500'
+  /auth/farmer/login:
+    put:
+      tags:
+        - auth
+      summary: Farmer login
+      description: Login a Farmer
+      operationId: farmerLogin
+      requestBody:
+        description: Login data
+        content:
+          application/json:
+            schema: 
+              $ref: '#/components/schemas/Login'
+            examples:
+              Example_1:
+                value:
+                      email : ejemplo@email.com
+                      password : "123456789"
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FarmerSuccessfullLogin'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationError'
+        '422':
+          description: Validation errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginValidationErrors'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCode500'  
+components:
+  schemas:
+    AddressDTO:
+      type: object
+      properties:
+        road_type:
+          type: string
+          description: Type of the road
+          example: Calle
+        road_name:
+          type: string
+          description: Name of the road
+          example: Real
+        road_number:
+          type: string
+          description: Road number
+          example: 5
+        road_letter:
+          type: string
+          description: Letter of the road
+          example: B
+        road_km:
+          type: string
+          description: Road kilometer
+          example: 55
+        block:
+          type: string
+          description: Identification of the block
+          example: 1
+        portal:
+          type: string
+          description: Identification of the portal
+          example: A
+        stair:
+          type: string
+          description: Identification of the stair
+          example: 2
+        floor:
+          type: string
+          description: Floor number
+          example: 7
+        door:
+          type: string
+          description: Door number
+          example: 2B
+        town_entity:
+          type: string
+          description: Identification of the town
+          example: 2
+        town_name:
+          type: string
+          description: Town name
+          example: Sanlucar la Mayor
+        province:
+          type: string
+          description: Province name
+          example: Sevilla
+        country:
+          type: string
+          description: Country name
+          example: España
+        postal_code:
+          type: string
+          description: Postal code
+          example: 41806
+    Response201:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Success of the operation
+          example: true
+        data:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Object created"
+    Response422:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        data:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Validation errors"
+            status:
+              type: integer
+              example: 422
+            errors:
+              type: object
+              properties:
+                email:
+                  type: array
+                  items:
+                    type: string
+                    example: "The email has already been taken."
+                phone_number:
+                  type: array
+                  items:
+                    type: string
+                    example: "The phone number has already been taken."
+    ErrorCode500:
+      type: object
+      properties:
+        error:
+          type: array
+          items:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Internal Server Error
+              details:
+                type: string
+                example: Cant connect to the databse
+    NotFoundError:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        data:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Not Found"
+            status:
+              type: integer
+              example: 404
+            errors:
+              type: string
+              example: ""
+    CooperativeRegister:
+      type: object
+      properties:
+        nif :
+          type: string
+          example: "77443355Z"
+        name:
+          type: string
+          example: "Cooperative Oliges"
+        email:
+          type: string
+          format: email
+          example: "oliges@email.com"
+        password:
+          type: string
+          example: "123456789"
+        password_confirmation:
+          type: string
+          example: "123456789"
+        phone_number:
+          type: string
+          example: "666111333"
+        road_type:
+          type: string
+          example: "Calle"
+        road_name:
+          type: string
+          example: "Oliges"
+        road_number:
+          type: string
+          example: "12"
+        town_name:
+          type: string
+          example: "Coslada"
+        province:
+          type: string
+          example: "Madrid"
+        country:
+          type: string
+          example: "España"
+        postal_code:
+          type: string
+          example: "43000"
+    CooperativeRegisterResponse201:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Success of the operation
+          example: true
+        data:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Cooperative created"
+    Login:
+      type: object
+      properties:
+        email:
+          type: string
+          example: "example@oliges.com"
+        password:
+          type: string
+          example: "123456789"
+    AuthenticationError:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        data:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Invalid credentials."
+            status:
+              type: integer
+              example: 401
+            errors:
+              type: string
+              example: ""
+    SuccessfulLogin:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            user:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 6
+                email:
+                  type: string
+                  example: "oliges@email.com"
+                email_verified_at:
+                  type: string
+                  format: date-time
+                  example: null
+                created_at:
+                  type: string
+                  format: date-time
+                  example: "2023-11-09T19:43:11.000000Z"
+                updated_at:
+                  type: string
+                  format: date-time
+                  example: "2023-11-09T19:43:11.000000Z"
+                cooperative:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 3
+                    nif:
+                      type: string
+                      example: "10219945H"
+                    name:
+                      type: string
+                      example: "Cooperative Oliges"
+                    phone_number:
+                      type: string
+                      example: "666111333"
+                    user_id:
+                      type: integer
+                      example: 6
+                    address_id:
+                      type: integer
+                      example: 6
+                    created_at:
+                      type: string
+                      format: date-time
+                      example: "2023-11-09T19:43:11.000000Z"
+                    updated_at:
+                      type: string
+                      format: date-time
+                      example: "2023-11-09T19:43:11.000000Z"
+            access_token:
+              type: string
+              example: "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9..."
+    LoginValidationErrors:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        data:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Validation errors"
+            status:
+              type: integer
+              example: 422
+            errors:
+              type: object
+              properties:
+                password:
+                  type: array
+                  items:
+                    type: string
+                    example: "The password field is required."
+    FarmerRegister:
+      type: object
+      properties:
+        dni:
+          type: string
+          example: "10219909H"
+        name:
+          type: string
+          example: "Ana"
+        surname:
+          type: string
+          example: "Santiago"
+        email:
+          type: string
+          format: email
+          example: "ana@email.com"
+        password:
+          type: string
+          example: "123456789"
+        password_confirmation:
+          type: string
+          example: "123456789"
+        phone_number:
+          type: string
+          example: "666111222"
+        road_type:
+          type: string
+          example: "Calle"
+        road_name:
+          type: string
+          example: "Pilar de Madrid"
+        road_number:
+          type: string
+          example: "8"
+        town_name:
+          type: string
+          example: "Alcala"
+        province:
+          type: string
+          example: "Zaragoza"
+        country:
+          type: string
+          example: "España"
+        postal_code:
+          type: string
+          example: "42000"
+    FarmerRegisterResponse201:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Success of the operation
+          example: true
+        data:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Farmer registered"
+    FarmerSuccessfullLogin:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            user:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 2
+                email:
+                  type: string
+                  example: "example@email.com"
+                email_verified_at:
+                  type: string
+                  format: date-time
+                  example: null
+                created_at:
+                  type: string
+                  format: date-time
+                  example: "2023-11-09T19:38:44.000000Z"
+                updated_at:
+                  type: string
+                  format: date-time
+                  example: "2023-11-09T19:38:44.000000Z"
+                farmer:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    dni:
+                      type: string
+                      example: "10219907H"
+                    name:
+                      type: string
+                      example: "Antonio"
+                    surname:
+                      type: string
+                      example: "de la Rosa Santiago"
+                    phone_number:
+                      type: string
+                      example: "666111222"
+                    movil_number:
+                      type: object
+                      example: null
+                    user_id:
+                      type: integer
+                      example: 2
+                    address_id:
+                      type: integer
+                      example: 2
+                    created_at:
+                      type: string
+                      format: date-time
+                      example: "2023-11-09T19:38:44.000000Z"
+                    updated_at:
+                      type: string
+                      format: date-time
+                      example: "2023-11-09T19:38:44.000000Z"
+            access_token:
+              type: string
+              example: "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9... (token aleatorio)"
+      
+  
+  
+  securitySchemes:
+    bearerToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
