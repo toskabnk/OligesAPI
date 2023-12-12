@@ -218,13 +218,13 @@ class ReceiptController extends ResponseController
         //Check if user is a cooperative
         if($currentUser->cooperative) {
             //Create the query with the farmer data and filter by the cooperative at the start
-            $query = Receipt::query()->with('farmer:id,name,surname,dni')->where('cooperative_id', $currentUser->cooperative->id);
+            $query = Receipt::query()->with('farmer:id,name,surname,dni','cooperative:id,nif')->where('cooperative_id', $currentUser->cooperative->id);
         }
 
         //Check if user is a farmer
         if($currentUser->farmer) {
             //Create the query with the farmer data and filter by the farmer at the start
-            $query = Receipt::query()->with('farmer:id,name,surname,dni')->where('farmer_id', $currentUser->farmer->id);
+            $query = Receipt::query()->with('farmer:id,name,surname,dni','cooperative:id,nif')->where('farmer_id', $currentUser->farmer->id);
         }
 
         //Check if filter is present and query the data
@@ -262,7 +262,7 @@ class ReceiptController extends ResponseController
         }
 
         //Save the results
-        $receipts = $query->select('id', 'date','albaran_number', 'farmer_id', 'campaign')->get();
+        $receipts = $query->select('id', 'date','albaran_number', 'farmer_id', 'campaign', 'cooperative_id')->get();
 
         //Return the results
         return $this->respondSuccess($receipts);
