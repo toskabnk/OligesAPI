@@ -44,7 +44,7 @@ class AddFarmerToCoopMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.member_register',
+            markdown: 'emails.cooperative_farmer_add',
             with: [
                 'name' => $this->data['name'],
                 'email' => $this->data['email'],
